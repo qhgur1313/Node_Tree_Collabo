@@ -1,6 +1,6 @@
 import TreeNode from '../component/TreeNode';
 import NodeContainer from '../store/NodeContainer';
-import { NodeMessage, OperationMessage } from '../store/TreeStore';
+import { NodeMessage } from '../store/TreeStore';
 import { UndoRedoProps } from './UndoRedoStack';
 
 abstract class Command {
