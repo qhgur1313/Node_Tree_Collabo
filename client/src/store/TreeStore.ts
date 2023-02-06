@@ -1,15 +1,15 @@
 import { boundMethod } from 'autobind-decorator';
 import {
-  action,
+  action, observable,
 } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import Command from '../command/Command';
 import UndoRedoStack from '../command/UndoRedoStack';
-import TreeNode from '../component/TreeNode';
+import TreeNode, { NodeInfo } from '../component/TreeNode';
 import IdContainer from './IdContainer';
 import MessageSubscriber from './MessageSubscriber';
 import NodeContainer from './NodeContainer';
-import Repository from './Repository';
+import Repository, { InitData } from './Repository';
 import SequenceNumberContainer from './SequenceNumberContainer';
 import CollaborationContainer from './CollaborationContainer';
 import MessageCreator from './MessageCreator';
@@ -17,6 +17,7 @@ import RemoteMessageHandler from './RemoteMessageHandler';
 import AppendNodeCommand from '../command/AppendNodeCommand';
 import RemoveNodeCommand from '../command/RemoveNodeCommand';
 import RemoteMessageModifier from './RemoteMessageModifier';
+import { parseNode } from '../util/NodeUtil';
 
 export interface OperationMessage {
   messages: NodeMessage[];
@@ -71,6 +72,9 @@ class TreeStore {
     '#737373',
   ];
 
+  @observable
+  public rootNode?: TreeNode;
+
   constructor() {
     this.idContainer = new IdContainer();
     this.nodeContainer = new NodeContainer();
@@ -83,7 +87,6 @@ class TreeStore {
       this.collaborationContainer, this.nodeContainer, this.remoteApply, this.setCommand,
     );
     this.sessionId = uuid();
-    this.init();
     this.messageCreator = new MessageCreator(
       this.sessionId, this.sequenceNumberContainer, this.userColors[this.idContainer.getOrder()],
     );
@@ -91,11 +94,27 @@ class TreeStore {
       new RemoteMessageModifier(this.collaborationContainer, this.nodeContainer);
   }
 
-  private async init(): Promise<void> {
-    await this.repository.getInitData(this.sessionId).then((res) => {
-      this.idContainer.init(res);
-      this.messageCreator.setColor(this.userColors[this.idContainer.getOrder()]);
-    });
+  @boundMethod
+  public initData(res: InitData): void {
+    this.idContainer.init(res.order);
+    this.messageCreator.setColor(this.userColors[this.idContainer.getOrder()]);
+    const loadingData: NodeInfo[] = JSON.parse(res.nodeStringfy);
+    const rootNode = parseNode(loadingData);
+    this.setRootNode(rootNode);
+    this.nodeContainer.putNodeToContainer(rootNode);
+  }
+
+  @boundMethod
+  public getSessionId(): string {
+    return this.sessionId;
+  }
+
+  public getRootNode(): TreeNode {
+    return this.rootNode as TreeNode;
+  }
+
+  public setRootNode(rootNode: TreeNode): void {
+    this.rootNode = rootNode;
   }
 
   public getIdContainer(): IdContainer {
@@ -233,6 +252,11 @@ class TreeStore {
           break;
       }
     });
+    const nodeInfo: NodeInfo[] = [];
+    this.nodeContainer.nodeList.forEach((node: TreeNode) => {
+      nodeInfo.push(node.serialize());
+    });
+    this.repository.updateNode(JSON.stringify(nodeInfo));
   }
 
   private setSeqNum(message: NodeMessage, seqNum: number): void {

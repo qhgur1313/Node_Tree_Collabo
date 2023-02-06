@@ -2,7 +2,7 @@ import { boundMethod } from 'autobind-decorator';
 import TreeNode from '../component/TreeNode';
 import CollaborationContainer from './CollaborationContainer';
 import NodeContainer from './NodeContainer';
-import { NodeMessage, OperationMessage } from './TreeStore';
+import { NodeMessage } from './TreeStore';
 
 class RemoteMessageModifier {
   private collaborationContainer: CollaborationContainer;

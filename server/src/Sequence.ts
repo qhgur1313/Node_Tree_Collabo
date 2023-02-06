@@ -15,9 +15,20 @@ class Sequence {
 
   private seqNum: number;
 
+  private nodeStringfy: string;
+
   constructor() {
     this.clients = [];
     this.seqNum = 1;
+    this.nodeStringfy = `[{"id":0,"text":"0","seqNum":-1,"color":"000000"}]`;
+  }
+
+  public updateNodes(nodeStringfy: string): void {
+    this.nodeStringfy = nodeStringfy;
+  }
+
+  public getNodes(): string {
+    return this.nodeStringfy;
   }
 
   public addClient(id: string): void {

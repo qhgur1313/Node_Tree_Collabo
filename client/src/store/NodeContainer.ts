@@ -2,8 +2,10 @@ import { makeObservable, observable } from 'mobx';
 import TreeNode from '../component/TreeNode';
 
 class NodeContainer {
-  @observable
   public nodeList: TreeNode[] = [];
+
+  @observable
+  public numberOfNodes: number = 0;
 
   constructor() {
     makeObservable(this);
@@ -22,6 +24,8 @@ class NodeContainer {
         nodeList.push(child);
       });
     }
+
+    this.numberOfNodes = this.nodeList.length;
   }
 
   public removeNodeFromContainer(node: TreeNode): void {
@@ -33,11 +37,13 @@ class NodeContainer {
     }
 
     if (node.getFirstChild() === undefined) {
+      this.numberOfNodes = this.nodeList.length;
       return;
     }
     for (let child = node.getFirstChild(); child !== undefined; child = child.getNextSibling()) {
       this.removeNodeFromContainer(child);
     }
+    this.numberOfNodes = this.nodeList.length;
   }
 
   public getNodeById = (id: number | undefined): TreeNode | undefined => {
