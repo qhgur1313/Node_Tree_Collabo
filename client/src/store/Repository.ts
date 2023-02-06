@@ -3,6 +3,11 @@ import { OperationMessage } from './TreeStore';
 
 const serverUrl = 'http://localhost:4000';
 
+export interface InitData {
+  order: number;
+  nodeStringfy: string;
+}
+
 class Repository {
   public postMessage(message: OperationMessage | undefined): void {
     if (message !== undefined) {
@@ -12,8 +17,14 @@ class Repository {
     }
   }
 
-  public async getInitData(id: string): Promise<number> {
-    return axios.get(`${serverUrl}/connect?id=${id}`).then((res) => res.data.order);
+  public async getInitData(id: string): Promise<InitData> {
+    return axios.get(`${serverUrl}/connect?id=${id}`).then((res) => ({ order: res.data.order, nodeStringfy: res.data.nodeStringfy }));
+  }
+
+  public updateNode(nodeStringfy: string): void {
+    axios.post(`${serverUrl}/update`, { nodeStringfy }).then((res) => {
+      // console.log(res.status);
+    });
   }
 }
 

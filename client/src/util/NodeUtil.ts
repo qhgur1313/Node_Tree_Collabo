@@ -1,4 +1,4 @@
-import TreeNode from '../component/TreeNode';
+import TreeNode, { NodeInfo } from '../component/TreeNode';
 
 export default function countLeafNodes(node: TreeNode): number {
   let cnt = 0;
@@ -53,4 +53,37 @@ export function getDepthSplit(node: TreeNode): TreeNode[][] {
   }
 
   return nodesSplitWithDepth;
+}
+
+export function parseNode(nodeDatas: NodeInfo[]): TreeNode {
+  const nodeMap = new Map<number, TreeNode>();
+  let rootNode = new TreeNode(0, '0', '#000000');
+  nodeDatas.forEach((info: NodeInfo) => {
+    const node = new TreeNode(info.id, info.text, info.color);
+    node.setSeqNum(0);
+    nodeMap.set(info.id, node);
+    if (info.id === 0) {
+      rootNode = node;
+    }
+  });
+
+  nodeDatas.forEach((info: NodeInfo) => {
+    const node = nodeMap.get(info.id);
+    if (info.parentId) {
+      node?.setParent(nodeMap.get(info.parentId));
+    }
+    if (info.firstChildId) {
+      node?.setFirstChild(nodeMap.get(info.firstChildId));
+    }
+    if (info.lastChildId) {
+      node?.setLastChild(nodeMap.get(info.lastChildId));
+    }
+    if (info.prevId) {
+      node?.setPrevSibling(nodeMap.get(info.prevId));
+    }
+    if (info.nextId) {
+      node?.setNextSibling(nodeMap.get(info.nextId));
+    }
+  });
+  return rootNode;
 }

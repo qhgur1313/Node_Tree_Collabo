@@ -10,7 +10,7 @@ interface DepthContainerProps {
   nodes: TreeNode[];
 }
 
-function NodeContainerEachDepth(props: DepthContainerProps): ReactElement {
+function NodeComponentEachDepth(props: DepthContainerProps): ReactElement {
   const { nodes } = props;
   const count = nodes.reduce((acc, node) => acc + (countLeafNodes(node) || 1), 0);
   return (
@@ -25,4 +25,4 @@ function NodeContainerEachDepth(props: DepthContainerProps): ReactElement {
   );
 }
 
-export default observer(NodeContainerEachDepth);
+export default observer(NodeComponentEachDepth);

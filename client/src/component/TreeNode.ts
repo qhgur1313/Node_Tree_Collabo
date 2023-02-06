@@ -171,6 +171,31 @@ class TreeNode {
     }
     return children[index];
   }
+
+  public serialize(): NodeInfo {
+    const message: NodeInfo = {
+      id: this.getId(),
+      parentId: this.getParent()?.getId(),
+      firstChildId: this.getFirstChild()?.getId(),
+      lastChildId: this.getLastChild()?.getId(),
+      prevId: this.getPrevSibling()?.getId(),
+      nextId: this?.getNextSibling()?.getId(),
+      text: this.getText(),
+      color: this.getColor()
+    };
+    return message;
+  }
+}
+
+export interface NodeInfo {
+  id: number;
+  parentId?: number;
+  firstChildId?: number;
+  lastChildId?: number;
+  prevId?: number;
+  nextId?: number;
+  text: string;
+  color: string;
 }
 
 export default TreeNode;

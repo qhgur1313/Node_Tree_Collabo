@@ -38,9 +38,14 @@ app.post('/message', (req: Request, res: Response) => {
   res.send({ result: 'ok' });
 });
 
+app.post('/update', (req: Request, res: Response) => {
+  sequence.updateNodes(req.body.nodeStringfy);
+  res.send({ result: 'ok' });
+})
+
 app.get('/connect', (req: Request, res: Response) => {
   sequence.addClient(req.params.id);
-  res.json({order : sequence.getOrder()});
+  res.json({order : sequence.getOrder(), nodeStringfy: sequence.getNodes()});
 })
  
 app.listen(port, () => {

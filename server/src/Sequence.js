@@ -4,6 +4,13 @@ class Sequence {
     constructor() {
         this.clients = [];
         this.seqNum = 1;
+        this.nodeStringfy = `[{"id":0,"text":"0","seqNum":-1,"color":"000000"}]`;
+    }
+    updateNodes(nodeStringfy) {
+        this.nodeStringfy = nodeStringfy;
+    }
+    getNodes() {
+        return this.nodeStringfy;
     }
     addClient(id) {
         this.clients.push(id);

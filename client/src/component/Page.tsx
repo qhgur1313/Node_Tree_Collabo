@@ -4,7 +4,7 @@ import AppendNodeCommand from '../command/AppendNodeCommand';
 import RemoveNodeCommand from '../command/RemoveNodeCommand';
 import useStore from '../store/useStore';
 import { getDepthSplit } from '../util/NodeUtil';
-import NodeContainerEachDepth from './NodeContainerEachDepth';
+import NodeComponentEachDepth from './NodeComponentEachDepth';
 import TreeNode from './TreeNode';
 
 interface PageProps {
@@ -95,7 +95,7 @@ function Page(props: PageProps) {
   return (
     <div>
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-        <div>{treeStore.getNodeContainer().nodeList.length}</div>
+        <div>{treeStore.getNodeContainer().numberOfNodes}</div>
         <div>
           <button type="button" onClick={start} style={{ margin: 10 }}>시작</button>
           <button type="button" onClick={stop} style={{ margin: 10 }}>중지</button>
@@ -103,7 +103,7 @@ function Page(props: PageProps) {
       </div>
       <div style={{ width, display: 'flex', flexDirection: 'column' }}>
         {
-        nodesSplitWithDepth.map((value) => <NodeContainerEachDepth nodes={value} />)
+        nodesSplitWithDepth.map((value) => <NodeComponentEachDepth nodes={value} />)
       }
       </div>
     </div>

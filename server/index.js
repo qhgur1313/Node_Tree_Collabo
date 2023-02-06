@@ -36,9 +36,13 @@ app.post('/message', (req, res) => {
     });
     res.send({ result: 'ok' });
 });
+app.post('/update', (req, res) => {
+    sequence.updateNodes(req.body.nodeStringfy);
+    res.send({ result: 'ok' });
+});
 app.get('/connect', (req, res) => {
     sequence.addClient(req.params.id);
-    res.json({ order: sequence.getOrder() });
+    res.json({ order: sequence.getOrder(), nodeStringfy: sequence.getNodes() });
 });
 app.listen(port, () => {
     console.log(`[server]: Server is running at <https://localhost>:${port}`);
