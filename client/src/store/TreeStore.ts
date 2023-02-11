@@ -191,6 +191,9 @@ class TreeStore {
     if (this.command === undefined) {
       return;
     }
+    if (!this.command.getUndoRedoState()) {
+      return;
+    }
     this.sequenceNumberContainer.incrementClientSeqNum();
     this.command?.unApply(
       { 
@@ -198,6 +201,9 @@ class TreeStore {
         currentSeqNum: this.sequenceNumberContainer.getSeqNum(), 
         collaborationContainer: this.collaborationContainer 
       });
+    if (!this.command.getUndoRedoState()) {
+      return;
+    }
     this.putNodeToClientSeqPool(this.command?.getDeletedNodeByUndo(), this.command.getMovedNode());
     this.setSeqNumToCommand();
     this.repository.postMessage(
@@ -216,6 +222,9 @@ class TreeStore {
     if (this.command === undefined) {
       return;
     }
+    if (!this.command.getUndoRedoState()) {
+      return;
+    }
     this.sequenceNumberContainer.incrementClientSeqNum();
     this.command?.reApply(
       {
@@ -223,6 +232,9 @@ class TreeStore {
         currentSeqNum: this.sequenceNumberContainer.getSeqNum(), 
         collaborationContainer: this.collaborationContainer 
       });
+    if (!this.command.getUndoRedoState()) {
+      return;
+    }
     this.putNodeToClientSeqPool(this.command?.getDeletedNodeByRedo(), this.command.getMovedNode());
     this.setSeqNumToCommand();
     this.repository.postMessage(
@@ -299,9 +311,8 @@ class TreeStore {
 
   @boundMethod
   public handleRemoteMessage(message: OperationMessage): void {
-    console.log(message);
     const { messages } = message;
-
+    console.log(messages);
     for (let i = 0; i < messages.length; i += 1) {
       switch (messages[i].behavior) {
         case 'insert':
@@ -319,26 +330,6 @@ class TreeStore {
       this.remoteApply();
       this.clearContext();
     }
-
-    // messages.forEach((msg) => {
-    //   console.log('each message');
-    //   console.log(msg);
-    //   switch (msg.behavior) {
-    //     case 'insert':
-    //       this.handleInsertMessage(message, msg);
-    //       break;
-    //     case 'delete':
-    //       this.handleDeleteMessage(message, msg);
-    //       break;
-    //     case 'move':
-    //       this.handleMoveMessage(message, msg);
-    //       break;
-    //     default:
-    //       break;
-    //   }
-    //   this.remoteApply();
-    //   this.clearContext();
-    // });
   }
 
   private handleInsertMessage(message: OperationMessage, nodeMessage: NodeMessage): void {
@@ -379,7 +370,7 @@ class TreeStore {
 
   private handleDeleteMessage(message: OperationMessage, nodeMessage: NodeMessage): void {
     const { seqNum, color } = message;
-    const { id } = nodeMessage;
+    const { id, parentId } = nodeMessage;
     if (id === undefined || seqNum === undefined || color === undefined) {
       return;
     }
@@ -387,6 +378,10 @@ class TreeStore {
     const targetNode = this.nodeContainer.getNodeById(id);
     if (targetNode === undefined) {
       console.error(`target node ${id} is not in node container`);
+      return;
+    }
+    if (targetNode.getParent()?.getId() !== parentId) {
+      console.error(`node ${parentId} and node ${id}} are not parent-child relation`);
       return;
     }
     this.setCommand(new RemoveNodeCommand(targetNode, color));
