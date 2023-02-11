@@ -36,6 +36,10 @@ abstract class Command {
     return undefined;
   }
 
+  public getMovedNode(): TreeNode | undefined {
+    return undefined;
+  }
+
   public getUndoRedoState(): boolean {
     return this.undoRedoState;
   }

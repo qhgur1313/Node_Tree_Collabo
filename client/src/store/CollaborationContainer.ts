@@ -27,14 +27,20 @@ class CollaborationContainer {
   @boundMethod
   public putNodesToClientSeqDeletedPoolAsMoved(
     cliSeqNum: number,
-    node: TreeNode,
+    node: TreeNode | undefined,
   ): void {
-    this.clientSeqDeletedPool.putNodeAsMoved(cliSeqNum, node);
+    if (node !== undefined) {
+      this.clientSeqDeletedPool.putNodeAsMoved(cliSeqNum, node);
+    }
   }
 
   @boundMethod
   public putNodeToDeletedPool(seqNum: number, node: TreeNode): void {
+    const children = node.getAllChildren();
     this.deletedPool.putNodeAsDeleted(seqNum, node);
+    for (let i = 0; i < children.length; i += 1) {
+      this.deletedPool.putNodeAsDeleted(seqNum, children[i]);
+    }
   }
 
   @boundMethod

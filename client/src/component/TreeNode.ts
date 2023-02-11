@@ -1,5 +1,16 @@
 import { NodeMessage } from '../store/TreeStore';
 
+export interface NodeInfo {
+  id: number;
+  parentId?: number;
+  firstChildId?: number;
+  lastChildId?: number;
+  prevId?: number;
+  nextId?: number;
+  text: string;
+  color: string;
+}
+
 class TreeNode {
   private id: number;
 
@@ -24,6 +35,18 @@ class TreeNode {
     this.text = text;
     this.color = color;
     this.seqNum = -1;
+  }
+
+  public clone(): TreeNode {
+    const cloneNode = new TreeNode(this.id, this.text, this.color);
+    cloneNode.setParent(this.getParent());
+    cloneNode.setPrevSibling(this.getPrevSibling());
+    cloneNode.setNextSibling(this.getNextSibling());
+    return cloneNode;
+  }
+
+  public setId(id: number): void {
+    this.id = id;
   }
 
   public getId(): number {
@@ -76,6 +99,11 @@ class TreeNode {
 
   public append(parent: TreeNode, nextSibling?: TreeNode): void {
     if (nextSibling !== undefined) {
+      if (nextSibling.getParent() !== parent) {
+        return;
+      }
+    }
+    if (nextSibling !== undefined) {
       parent.appendChildBefore(this, nextSibling);
     } else {
       parent.appendChildAtLastPosition(this);
@@ -110,19 +138,45 @@ class TreeNode {
     }
   }
 
-  public remove(): void {
-    const parent = this.getParent();
-    if (parent?.getFirstChild() === this) {
-      parent.setFirstChild(this.getNextSibling());
+  public remove(parent: TreeNode): void {
+    if (this.parent === parent) {
+      parent.removeChild(this);
+    } else {
+      console.error(`node ${parent.getId()} and node ${this.id} are not parent-child relation`);
     }
-    if (parent?.getLastChild() === this) {
-      parent.setLastChild(this.getPrevSibling());
+    // if (parent?.getFirstChild()?.getId() === this.getId()) {
+    //   parent.setFirstChild(this.getNextSibling());
+    // }
+    // if (parent?.getLastChild()?.getId() === this.getId()) {
+    //   parent.setLastChild(this.getPrevSibling());
+    // }
+    // this.getPrevSibling()?.setNextSibling(this.getNextSibling());
+    // this.getNextSibling()?.setPrevSibling(this.getPrevSibling());
+    // this.setParent(undefined);
+    // this.setNextSibling(undefined);
+    // this.setPrevSibling(undefined);
+  }
+
+  private removeChild(child: TreeNode): void {
+    if (this.firstChild === child) {
+      if (this.lastChild === child) {
+        // Only one
+        this.firstChild = undefined;
+        this.lastChild = undefined;
+      } else {
+        // First
+        this.firstChild = child.getNextSibling();
+        this.firstChild?.setPrevSibling(undefined);
+      }
+    } else if (this.lastChild === child) {
+      // Last
+      this.lastChild = child.getPrevSibling();
+      this.lastChild?.setNextSibling(undefined);
+    } else {
+      // Middle
+      child.getPrevSibling()?.setNextSibling(child.getNextSibling());
+      child.getNextSibling()?.setPrevSibling(child.getPrevSibling());
     }
-    this.getPrevSibling()?.setNextSibling(this.getNextSibling());
-    this.getNextSibling()?.setPrevSibling(this.getPrevSibling());
-    this.setParent(undefined);
-    this.setNextSibling(undefined);
-    this.setPrevSibling(undefined);
   }
 
   public createMessage(): NodeMessage {
@@ -143,6 +197,20 @@ class TreeNode {
       children.push(node);
     }
     return children;
+  }
+
+  public getAllChildren(): TreeNode[] {
+    const children: TreeNode[] = [];
+    this.getChildrenAll(this, children);
+    return children;
+  }
+
+  private getChildrenAll(node: TreeNode, children: TreeNode[]): void {
+    let child = node.getFirstChild();
+    for (; child !== undefined; child = child.getNextSibling()) {
+      children.push(child);
+      this.getChildrenAll(child, children);
+    }   
   }
 
   public getColor(): string {
@@ -185,17 +253,6 @@ class TreeNode {
     };
     return message;
   }
-}
-
-export interface NodeInfo {
-  id: number;
-  parentId?: number;
-  firstChildId?: number;
-  lastChildId?: number;
-  prevId?: number;
-  nextId?: number;
-  text: string;
-  color: string;
 }
 
 export default TreeNode;

@@ -1,4 +1,4 @@
-import { makeObservable, observable } from 'mobx';
+import { makeObservable, observable, runInAction } from 'mobx';
 import TreeNode from '../component/TreeNode';
 
 class NodeContainer {
@@ -25,25 +25,19 @@ class NodeContainer {
       });
     }
 
-    this.numberOfNodes = this.nodeList.length;
+    runInAction(() => { this.numberOfNodes = this.nodeList.length; });
   }
 
   public removeNodeFromContainer(node: TreeNode): void {
-    for (let i = 0; i < this.nodeList.length; i++) {
-      if (this.nodeList[i] === node) {
-        this.nodeList.splice(i, 1);
-        break;
-      }
-    }
+    const children = node.getAllChildren();
+    children.push(node);
+    this.nodeList = this.removeNodes(this.nodeList, children);
+    runInAction(() => { this.numberOfNodes = this.nodeList.length; });
+  }
 
-    if (node.getFirstChild() === undefined) {
-      this.numberOfNodes = this.nodeList.length;
-      return;
-    }
-    for (let child = node.getFirstChild(); child !== undefined; child = child.getNextSibling()) {
-      this.removeNodeFromContainer(child);
-    }
-    this.numberOfNodes = this.nodeList.length;
+  private removeNodes(A: TreeNode[], B: TreeNode[]): TreeNode[] {
+    const nodeIdsToRemove = new Set(B.map((node) => node.getId()));
+    return A.filter((node) => !nodeIdsToRemove.has(node.getId()));
   }
 
   public getNodeById = (id: number | undefined): TreeNode | undefined => {

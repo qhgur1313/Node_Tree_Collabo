@@ -45,7 +45,7 @@ class AppendNodeCommand extends Command {
   private removeNode(nodeContainer: NodeContainer): void {
     this.parent = this.target.getParent() as TreeNode;
     this.nextSibling = this.target.getNextSibling();
-    this.target.remove();
+    this.target.remove(this.parent);
     nodeContainer.removeNodeFromContainer(this.target);
   }
 
