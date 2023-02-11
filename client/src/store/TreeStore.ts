@@ -1,6 +1,6 @@
 import { boundMethod } from 'autobind-decorator';
 import {
-  action, observable,
+  action,
 } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import Command from '../command/Command';
@@ -184,10 +184,20 @@ class TreeStore {
 
   @action
   public unApply(): void {
-    if (!this.undoRedoStack.isUndoable()) {
+    this.undoRedo(true);
+  }
+
+  @action
+  public reApply(): void {
+    this.undoRedo(false);
+  }
+
+  private undoRedo(undoRedo: boolean): void {
+    if (!this.undoRedoStack.isRedoable()) {
       return;
     }
-    this.command = this.undoRedoStack.getUndoCommand();
+    this.command = undoRedo ? 
+      this.undoRedoStack.getUndoCommand() : this.undoRedoStack.getRedoCommand();
     if (this.command === undefined) {
       return;
     }
@@ -195,7 +205,8 @@ class TreeStore {
       return;
     }
     this.sequenceNumberContainer.incrementClientSeqNum();
-    this.command?.unApply(
+    const apply = undoRedo ? this.command.unApply : this.command.reApply;
+    apply(
       { 
         nodeContainer: this.nodeContainer, 
         currentSeqNum: this.sequenceNumberContainer.getSeqNum(), 
@@ -204,41 +215,14 @@ class TreeStore {
     if (!this.command.getUndoRedoState()) {
       return;
     }
-    this.putNodeToClientSeqPool(this.command?.getDeletedNodeByUndo(), this.command.getMovedNode());
+    const deletedNode = undoRedo ? 
+      this.command?.getDeletedNodeByUndo() : this.command?.getDeletedNodeByRedo();
+    this.putNodeToClientSeqPool(deletedNode, this.command.getMovedNode());
     this.setSeqNumToCommand();
+    const message = undoRedo ?
+      this.command?.createUnApplyMessage() : this.command?.createReApplyMessage();
     this.repository.postMessage(
-      this.messageCreator.getMessage(this.command?.createUnApplyMessage()),
-    );
-    this.commandBeforeConfirmed.set(this.sequenceNumberContainer.getClientSeqNum(), this.command);
-    this.clearContext();
-  }
-
-  @action
-  public reApply(): void {
-    if (!this.undoRedoStack.isRedoable()) {
-      return;
-    }
-    this.command = this.undoRedoStack.getRedoCommand();
-    if (this.command === undefined) {
-      return;
-    }
-    if (!this.command.getUndoRedoState()) {
-      return;
-    }
-    this.sequenceNumberContainer.incrementClientSeqNum();
-    this.command?.reApply(
-      {
-        nodeContainer: this.nodeContainer, 
-        currentSeqNum: this.sequenceNumberContainer.getSeqNum(), 
-        collaborationContainer: this.collaborationContainer 
-      });
-    if (!this.command.getUndoRedoState()) {
-      return;
-    }
-    this.putNodeToClientSeqPool(this.command?.getDeletedNodeByRedo(), this.command.getMovedNode());
-    this.setSeqNumToCommand();
-    this.repository.postMessage(
-      this.messageCreator.getMessage(this.command?.createReApplyMessage()),
+      this.messageCreator.getMessage(message),
     );
     this.commandBeforeConfirmed.set(this.sequenceNumberContainer.getClientSeqNum(), this.command);
     this.clearContext();
