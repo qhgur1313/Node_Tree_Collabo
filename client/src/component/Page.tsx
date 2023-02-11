@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import AppendNodeCommand from '../command/AppendNodeCommand';
+import MoveNodeCommand from '../command/MoveNodeCommand';
 import RemoveNodeCommand from '../command/RemoveNodeCommand';
 import useStore from '../store/useStore';
 import { getDepthSplit } from '../util/NodeUtil';
@@ -29,11 +30,40 @@ function Page(props: PageProps) {
   };
 
   const removeRandomNode = () => {
+    if (treeStore.getNodeContainer().numberOfNodes !== 1) {
+      let targetNode = treeStore.getNodeContainer().getRandomNode();
+      while (targetNode.getId() === 0) {
+        targetNode = treeStore.getNodeContainer().getRandomNode();
+      }
+      treeStore.setCommand(new RemoveNodeCommand(targetNode, treeStore.getColor()));
+      treeStore.apply();
+    }
+  };
+
+  function checkParent(parent: TreeNode, children: TreeNode[]): boolean {
+    for (let i = 0; i < children.length; i += 1) {
+      if (children[i] === parent) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  const moveRandomNode = () => {
     let targetNode = treeStore.getNodeContainer().getRandomNode();
     while (targetNode.getId() === 0) {
       targetNode = treeStore.getNodeContainer().getRandomNode();
     }
-    treeStore.setCommand(new RemoveNodeCommand(targetNode, treeStore.getColor()));
+
+    const children = targetNode.getAllChildren();
+    let targetParent = treeStore.getNodeContainer().getRandomNode();
+
+    while (targetParent.getId() === 0 || checkParent(targetParent, children)) {
+      targetParent = treeStore.getNodeContainer().getRandomNode();
+    }
+
+    treeStore.setCommand(
+      new MoveNodeCommand(targetNode, targetParent, targetParent.getRandomChild()));
     treeStore.apply();
   };
 
@@ -53,7 +83,10 @@ function Page(props: PageProps) {
   for (let i = 0; i < 3; i++) {
     behavior.push('remove');
   }
-  for (let i = 0; i < 3; i++) {
+  // for (let i = 0; i < 3; i++) {
+  //   behavior.push('move');
+  // }
+  for (let i = 0; i < 5; i++) {
     behavior.push('undo');
   }
   for (let i = 0; i < 2; i++) {
@@ -62,6 +95,7 @@ function Page(props: PageProps) {
 
   const random = () => {
     const randomBehavior: string = behavior[Math.floor(Math.random() * behavior.length)];
+    // console.log(randomBehavior);
     switch (randomBehavior) {
       case 'add':
         addRandomNode();
@@ -75,17 +109,19 @@ function Page(props: PageProps) {
       case 'redo':
         redo();
         break;
+      case 'move':
+        moveRandomNode();
+        break;
       default:
         break;
     }
-    console.log(randomBehavior);
   };
 
   function start() {
     if (timer !== undefined) {
       clearInterval(timer);
     }
-    timer = setInterval(random, 1000);
+    timer = setInterval(random, 50);
   }
 
   function stop() {
@@ -95,9 +131,13 @@ function Page(props: PageProps) {
   return (
     <div>
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-        <div>{treeStore.getNodeContainer().numberOfNodes}</div>
         <div>
-          <button type="button" onClick={start} style={{ margin: 10 }}>시작</button>
+          현재 총 node 갯수 :
+          {' '}
+          {treeStore.getNodeContainer().numberOfNodes}
+        </div>
+        <div>
+          <button type="button" onClick={start} style={{ margin: 10 }}>자동 동작 시작</button>
           <button type="button" onClick={stop} style={{ margin: 10 }}>중지</button>
         </div>
       </div>

@@ -69,7 +69,7 @@ export function parseNode(nodeDatas: NodeInfo[]): TreeNode {
 
   nodeDatas.forEach((info: NodeInfo) => {
     const node = nodeMap.get(info.id);
-    if (info.parentId) {
+    if (info.parentId || info.parentId === 0) {
       node?.setParent(nodeMap.get(info.parentId));
     }
     if (info.firstChildId) {
