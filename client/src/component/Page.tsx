@@ -21,6 +21,8 @@ function Page(props: PageProps) {
   const width: number = 0;
   const nodesSplitWithDepth: TreeNode[][] = getDepthSplit(rootNode);
 
+  const randomBehaviorTerm = 50;
+
   const addRandomNode = () => {
     const newId = treeStore.getIdContainer().getId();
     const newNode = new TreeNode(newId, newId as unknown as string, treeStore.getColor());
@@ -121,7 +123,7 @@ function Page(props: PageProps) {
     if (timer !== undefined) {
       clearInterval(timer);
     }
-    timer = setInterval(random, 50);
+    timer = setInterval(random, randomBehaviorTerm);
   }
 
   function stop() {

@@ -21,8 +21,10 @@ function NodeComponent(props: TextNodeProps): ReactElement {
 
   const removeNode = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    treeStore.setCommand(new RemoveNodeCommand(node, treeStore.getColor()));
-    treeStore.apply();
+    if (node.getId() !== 0) {
+      treeStore.setCommand(new RemoveNodeCommand(node, treeStore.getColor()));
+      treeStore.apply();
+    }
   };
 
   return (
