@@ -1,7 +1,11 @@
-# Node Tree Maker 통합 환경
+# Node Tree Maker
+
+## 프로젝트 목적
+노드트리를 편집하고, 해당 노드트리를 시각화해주는 토이 프로젝트입니다. 이 프로젝트는 웹소켓을 통해 여러 유저가 접속하여 동일한 화면을 볼 수 있게 하며, 동시 편집 상황에서 발생하는 커맨드 충돌을 해결하는 로직이 포함되어 있습니다.
 
 ## 구축 환경
-
+- Client : React + Typescript
+- Server : express + Typescript
 - server와 client 모두 해당
 - node version : 16.13.2
 - npm version : 8.1.2
