@@ -13,9 +13,9 @@
 ## 구축 환경
 - Client : React + Typescript
 - Server : express + Typescript
-- server와 client 모두 해당
-- node version : 16.13.2
-- npm version : 8.1.2
+- Server와 Client 모두 해당
+  - node version : 16.13.2
+  - npm version : 8.1.2
 
 ## 사용 방법
 
